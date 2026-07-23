@@ -1,0 +1,52 @@
+@charset "UTF-8";
+
+
+/* pタグの要素に適用 */
+
+p { color:black; font-size:20px; }
+
+
+/*  ヘッダーの設定　*/
+
+h2{ color: #FF7BAC; }
+h3{ color: #4B2E2B; }
+h4 { color: #CC5C8E; }
+
+/* BODY の背景色と文字色を指定　RGBで色を変えてみよう　*/
+body { background-color: #FFF7FA; color: #4B2E2B; font-family: "Hiragino Sans", "Noto Sans    JP",line-height: 1.7;margin: 30px; }
+
+/* 画像の指定　*/
+img.example1 {  width: 95px; height: 65px }
+	img.example2 { width:500px; height:300px }
+		img.example3 {width: 1000px; height:500px}
+
+a ｛ color: #FF7BAC; text-decoration: none;｝
+a:hover { text-decoration: underline; opacity: 0.85;}
+
+
+/* id名をセレクタに指定  <div id="example"> */
+#example { color: blue; }
+
+/* class名をセレクタに指定 <div class="example">  */
+.example { color: blue; }
+
+
+/* 背景カラーが変化 <div class="colorchange_bg">  */
+.colorchange_bg { height: 500px; margin: 30px 0; animation: colorchange-color 10s infinite;}
+@keyframes colorchange-color 
+{
+                    0%, 100% { background-color: #6bb6ff;}
+                    25% { background-color: #1abc9c;}
+                    50% { background-color: #9b59b6;}
+                    75% {background-color: #85e3ec;}
+}
+
+a:link { color: #FF7BAC; text-decoration: none;}
+
+a:visited { color: #CC5C8E;}
+
+a:hover { color: #FF95BF; text-decoration: underline;}
+
+a:active { color: #FF4F9B;}
+
+.title-main { color: #FF7BAC; text-align: left; font-size: 32px;}

@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>推しプロゲーマー図鑑</title>
+
+<style>
+body{
+  font-family: sans-serif;
+  background:#f5f7fb;
+  color:#222;
+  margin:0;
+  padding:20px;
+}
+
+h1{
+  margin-bottom:10px;
+}
+
+.controls{
+  margin-bottom:20px;
+}
+
+button{
+  padding:8px 12px;
+  margin-right:8px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+}
+
+.card {
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  trnsition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+}
+
+.card-blue {
+  background: linear-gradient(135deg, #93c5fd, #bfdbfe);
+  color: #1e293b;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.card-red {
+  background: linear-gradient(135deg, #fca5a5, #fecaca);
+  color: #1e293b;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.card-green {
+  background: #86efac;
+  color: #1e293b;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.card-orange {
+  background: #fdba74;
+  color: #1e293b;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.favorite{
+  color:gold;
+  font-size:18px;
+  cursor:pointer;
+}
+
+.detail{
+  margin-top:10px;
+  padding-top:10px
+  border-top:1px solid rgba(0,0,0,0.15);
+  font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>推しプロゲーマー図鑑</h1>
+
+<div class="controls">
+  <button onclick="showAll()">全員表示</button>
+  <button onclick="showFavorites()">★お気に入りだけ</button>
+</div>
+<div class="filters">
+  <button onclick="filterGame('ALL')">すべて</button>
+  <button onclick="filterGame('VALORANT')">VALORANT</button>
+  <button onclick="filterGame('Street Fighter 6')">Street Fighter 6</button>
+  <button onclick="filterGameAndFav('VALORANT')">★VALORANT</button>
+  <button onclick="filterGameAndFav('Street Fighter 6')">★Street Fighter 6</button>
+</div>
+
+<div id="list"></div>
+<div id="modal" class="modal" onclick="closeModal()">
+ <div class="modalContent" onclick="event.stopPropagation()">
+  <button class="close" onclick="closeModal()">×</button>
+  <div id="modalBody"></div>
+ </div>
+</div>
+
+<script>
+const players = [
+  {
+    name: "Laz",
+    game: "VALORANT",
+    feature: "チームのエース兼リーダーで絶対的な精神的支柱/日本ヴァロラント界の絶対的レジェンド/GodLaz",
+    team: "ZETA DIVISION",
+　　birthday: "1995-11-26",
+    result: ["VCT Masters Reykjavik 2022 3位","VCT Champions 2022 ベスト8"]
+  },
+  {
+    name: "kawano",
+    game: "Street Fighter 6",
+    feature: "世界最強選手の一角/スト６研究家",
+    team: "Good 8 Squad",
+    birthday: "1998-11-7",
+    result: ["EVO Japan 2023 優勝","世界大会上位常連"]
+  },
+  {
+    name: "shuto",
+    game: "Street Fighter 6",
+    feature: "超攻撃的に見えて緩急のある攻め方",
+    team: "Crazy Racoon",
+    birthday: "1998-8-14",
+    result: ["Capcom Cup 2022　準優勝","CPT優勝複数"]
+  },
+  {
+    name: "GON",
+    game: "VALORANT",
+    feature: "エンターテイナー/人一倍努力している",
+    team: "fennel",
+    birthday: "2002-11-15",
+    result: ["VALORANT Champions 2023 ベスト３"]
+  },
+  {
+    name: "neth",
+    game: "VALORANT",
+    feature: "チームのベテランで精神的支柱/日本ヴァロラント界の二大巨頭の一角",
+    team: "Crazy Racoon",
+    birthday: "1996-5-26",
+    result: ["VALORANT Champions 2023 ベスト３"]
+  },
+  {
+    name: "Dep",
+    // ✅ 全角「、」じゃなくて半角カンマ , にする
+    game: ["PUBG", "OverWatch2", "VALORANT"],
+    feature: "エイム職人/日本代表経験あり/神の子",
+    team: "REJECT",
+    birthday: "2000-12-4",
+    result: ["VCT Masters Reykjavik 2022 3位","VCT Champions 2022 ベスト8"]
+  },
+];
+
+let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+
+function toggleFavorite(name) {
+  if (favorites.includes(name)) {
+    favorites = favorites.filter(f => f !== name);
+  } else {
+    favorites.push(name);
+  }
+
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+  render(players);
+}
+
+// ✅　関数の外に置く(onclickから呼べるようにする)
+window.showFavorites = showFavorites;
+window.showAll = showAll;
+window.toggleFavorite = toggleFavorite;
+window.filterGame = filterGame;
+
+function showFavorites( ) {
+  const favList = players.filter(p => favorites.includes(p.name));
+
+  if (favList.length === 0) {
+    document.getElementById("list").innerHTML =
+      '<p style="color:#cbd5e1;">まだお気に入りがありません(★を押してね)</p>';
+    return;
+  }
+
+  render(favList);
+  }
+
+function render(list){
+  const area = document.getElementById("list");
+  area.innerHTML = "";
+
+  if (!list || list.length === 0) {
+    area.innerHTML = `<p style="color:#cbd5e1;">該当する選手がいません</p>`;
+    return;
+  }  
+
+  list.forEach(p => {
+    const isFav = favorites.includes(p.name);
+
+    // ✅ game が配列でも表示できるようにする
+    const gameText = Array.isArray(p.game) ? p.game.join(" / ") : p.game;
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    // まずcard　の基本表示を作る
+　　card.innerHTML = `
+      <div>
+        <span class="favorite" onclick="event.stopPropagation( ); toggleFavorite('${p.name}')">
+          ${favorites.includes(p.name) ? "★" : "☆"}
+　　　　</span>
+        <strong>${p.name}</strong>
+      </div>
+      <div>ゲーム:${gameText}</div>
+      <div>チーム:${p.team}</div>
+      <div>特徴:${p.feature}</div>
+      <div>誕生日:${p.birthday}</div>
+`;
+
+    const detail = document.createElement("div");
+    detail.className = "detail";
+    detail.style.display = "none"; //　最初は隠す
+
+    const resultsText = Array.isArray(p.result) ? p.result.join(" / ") : (p.result ?? "");
+
+　　detail.innerHTML = `
+      <div>主な実績: ${resultsText}</div>
+    `;
+
+    card.appendChild(detail);
+    
+    //　★カードを押したら開閉
+    card.onclick = ( ) => {
+      detail.style.display = (detail.style.display === "none") ? "block" : "none";
+    }; 
+
+    area.appendChild(card);
+
+    // 競技で色を変える
+    if (gameText.includes("VALORANT")) {
+      card.classList.add("card-blue");
+    } else if (gameText.includes("Street Fighter 6")) {
+      card.classList.add("card-red");
+    }
+    
+
+ 
+
+
+    
+
+    
+
+    card.innerHTML = `
+      <div>
+        <span class="favorite" onclick="toggleFavorite('${p.name}')">
+          ${isFav ? "★" : "☆"}
+        </span>
+        <strong>${p.name}</strong>
+      </div>
+
+      <div>ゲーム：${gameText}</div>
+      <div>チーム：${p.team}</div>
+      <div>特徴：${p.feature}</div>
+      <div>誕生日:${p.birthday}</div>
+      <div>年齢:${getAge(p.birthday)}歳</div>
+      <div>主な実績:</div>
+     
+    `;
+
+    area.appendChild(card);
+  });
+}
+
+function showFavorites(){
+  const favPlayers = players.filter(p => favorites.includes(p.name));
+
+  if (favPlayers.length === 0) {
+    document.getElementById("list").innerHTML =
+      `<p style="color:#cbd5e1;">まだお気に入りがありません（☆を押してね</p>`;
+    return;
+  }
+  render(favPlayers);
+}
+
+function showAll() {
+  render(players);
+}
+
+// ✅ ここが追加：フィルタ関数
+function filterGame(gameName){
+  if (!gameName || gameName === "ALL") {
+    render(players);
+    return;
+  }
+
+  const filtered = players.filter(p => {
+    if(Array.isArray(p.game)){
+       return p.game.includes(gameName); 
+      
+      }
+      return p.game === gameName;  
+});
+
+render(filtered);
+}
+
+function filterGameAndFav(gameName){
+  const filtered = players.filter(p => {
+    const matchGame = Array.isArray(p.game)
+      ? p.game.includes(gameName) 
+      : p.game === gameName;               
+
+    const isFav = favorites.includes(p.name);
+    return matchGame && isFav;
+});
+
+render(filtered);
+}
+
+window.filterGameAndFav = filterGameAndFav;
+
+
+window.filterGame = filterGame;
+window.showAll = showAll;
+window.showFavorites = showFavorites;
+
+
+function getAge(birthday) {
+  const today = new Date( );
+  const birthDate = new Date(birthday);
+
+  let age = today.getFullYear( ) - birthDate.getFullYear( );
+
+  const m = today.getMonth( ) - birthDate.getMonth( );
+
+  if (m < 0 || (m === 0 && today.getDate( ) <birthDate.getDate( ))) {
+    age--;
+  }
+
+  return age;
+} 
+
+// 初期表示
+render(players);
+
+// ✅ onclick から確実に呼べるように window に登録（環境によって必要）
+window.toggleFavorite = toggleFavorite;
+window.showFavorites = showFavorites;
+window.showAll = showAll;
+window.filterGame = filterGame;
+window.filterGameAndFav = filterGameAndFav;
+
+
+function showDetail(p) {
+  const body = document.getElementById("modalBody");
+  
+  const resultsHtml = (p.result && p.result.length)
+    ? `<ul>${p.result.map(r => `<li>${r}</li>`).join("")}</ul>`
+    : `<p>大会成績：未登録</p>`;
+  
+
+  body.innerHTML = `
+    <h2>${p.name}</h2>
+    <p>ゲーム: ${Array.isArray(p.game) ? p.game.join(" / ") : p.game}</p>
+    <p>チーム: ${p.team}</p>
+    <p>特徴: ${p.feature}</p>
+    <p>誕生日: ${p.birthday}</p>
+    <p>年齢: ${p.birthday ? getAge(p.birthday) + "歳" : "-"}</p>
+
+    <h3>主な大会成績</h3>
+    ${resultsHtml}
+
+    ${p.memo ? `<h3>メモ</h3><p>${p.memo}</p>` : ""}
+ `;
+
+   document.getElementById("modal").style.display = "flex";
+}
+
+function filterGame(gameName) {
+  if (!gameName || gameName === "ALL") {
+    render(players);
+    return;
+}
+
+const filtered = players.filter(p => {
+  if (Array.isArray(p.game)) {
+    return p.game.includes(gameName);
+  }
+  return p.game === gameName;
+ });
+
+ render(filtered);
+}
+ 
+
+  
+
+function closeModal( ) {
+  document.getElementById("modal").style.display = "none";
+}
+document.addEventListener("DOMContentLoaded", ( ) => {
+  render(players);
+});
+</script>
+
+</body>
+</html>

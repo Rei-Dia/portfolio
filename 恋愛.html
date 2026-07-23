@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>恋愛相性度診断ミニアプリ</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:#121a33;
+      --card2:#0f1730;
+      --text:#e9ecff;
+      --muted:#b8c0ff;
+      --accent:#7aa2ff;
+      --good:#48d597;
+      --warn:#ffcc66;
+      --bad:#ff6b6b;
+      --line:rgba(255,255,255,.12);
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+      background: radial-gradient(900px 600px at 20% 0%, rgba(122,162,255,.24), transparent 55%),
+                  radial-gradient(900px 600px at 80% 20%, rgba(72,213,151,.18), transparent 55%),
+                  linear-gradient(180deg, #0a0f1d, #070a13);
+      color:var(--text);
+      min-height:100vh;
+      padding:24px;
+    }
+    .wrap{max-width:1040px;margin:0 auto}
+    header{
+      display:flex;
+      gap:14px;
+      align-items:flex-end;
+      justify-content:space-between;
+      margin-bottom:18px;
+    }
+    h1{
+      margin:0;
+      font-size:22px;
+      letter-spacing:.02em;
+    }
+    .sub{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.4;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+    }
+    @media (max-width: 860px){
+      .grid{grid-template-columns:1fr}
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card h2{
+      margin:0;
+      padding:14px 16px;
+      font-size:16px;
+      border-bottom:1px solid var(--line);
+      background: rgba(0,0,0,.16);
+    }
+    .card .body{padding:16px}
+    .row{
+      display:grid;
+      grid-template-columns: 120px 1fr;
+      gap:12px;
+      align-items:center;
+      margin-bottom:12px;
+    }
+    .row label{
+      color:var(--muted);
+      font-size:13px;
+    }
+    input[type="text"], select{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background: rgba(8,12,26,.55);
+      color:var(--text);
+      outline:none;
+    }
+    input[type="text"]:focus, select:focus{
+      border-color: rgba(122,162,255,.55);
+      box-shadow: 0 0 0 3px rgba(122,162,255,.18);
+    }
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin:16px 0 0;
+    }
+    button{
+      padding:10px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      cursor:pointer;
+      font-weight:700;
+      letter-spacing:.02em;
+      transition: transform .06s ease, background .2s ease, border-color .2s ease;
+      user-select:none;
+    }
+    button:hover{background: rgba(255,255,255,.10)}
+    button:active{transform: translateY(1px)}
+    .primary{
+      background: linear-gradient(135deg, rgba(122,162,255,.95), rgba(122,162,255,.55));
+      border-color: rgba(122,162,255,.85);
+      color:#061027;
+    }
+    .primary:hover{background: linear-gradient(135deg, rgba(122,162,255,1), rgba(122,162,255,.62))}
+    .ghost{
+      background: rgba(0,0,0,.18);
+    }
+    .error{
+      display:none;
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,107,107,.45);
+      background: rgba(255,107,107,.12);
+      color:#ffd7d7;
+      font-size:13px;
+      line-height:1.5;
+    }
+    .result{
+      margin-top:16px;
+      padding:16px;
+      border-radius:var(--radius);
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(72,213,151,.12), rgba(255,255,255,.03));
+    }
+    .resultTop{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      font-size:13px;
+      color:var(--muted);
+    }
+    .score{
+      font-size:30px;
+      font-weight:900;
+      letter-spacing:.02em;
+    }
+    .rank{
+      font-weight:900;
+      font-size:22px;
+      padding:6px 10px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      min-width:52px;
+      text-align:center;
+    }
+    .rankA{color: var(--good); border-color: rgba(72,213,151,.45); background: rgba(72,213,151,.12)}
+    .rankB{color: #7ee6ff; border-color: rgba(126,230,255,.45); background: rgba(126,230,255,.10)}
+    .rankC{color: var(--warn); border-color: rgba(255,204,102,.45); background: rgba(255,204,102,.10)}
+    .rankD{color: #ff9f7a; border-color: rgba(255,159,122,.45); background: rgba(255,159,122,.10)}
+    .rankE{color: var(--bad); border-color: rgba(255,107,107,.45); background: rgba(255,107,107,.12)}
+    .comment{
+      color:var(--text);
+      line-height:1.75;
+      margin:8px 0 0;
+      font-size:14px;
+    }
+    .smallNote{
+      margin-top:12px;
+      color: rgba(233,236,255,.70);
+      font-size:12px;
+      line-height:1.6;
+    }
+    footer{
+      margin-top:14px;
+      color: rgba(233,236,255,.55);
+      font-size:12px;
+      text-align:right;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>恋愛相性度診断</h1>
+        <p class="sub">HTMLとJavaScriptだけで動く1ファイル完結ミニアプリ（外部ライブラリなし）</p>
+      </div>
+      <div class="pill" aria-label="仕様メモ">
+        <span>スコア:0〜100</span>
+        <span>・</span>
+        <span>ランク:A〜E</span>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card" aria-label="入力：1人目">
+        <h2>1人目</h2>
+        <div class="body">
+          <div class="row">
+            <label for="name1">名前</label>
+            <input id="name1" type="text" placeholder="例：さくら" maxlength="20" />
+          </div>
+          <div class="row">
+            <label for="blood1">血液型</label>
+            <select id="blood1">
+              <option value="">選択してください</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="O">O</option>
+              <option value="AB">AB</option>
+            </select>
+          </div>
+          <div class="row">
+            <label for="personality1">行動傾向</label>
+            <select id="personality1">
+              <option value="">選択してください</option>
+              <option value="のんびり">のんびり</option>
+              <option value="アクティブ">アクティブ</option>
+              <option value="好奇心旺盛">好奇心旺盛</option>
+              <option value="安定志向">安定志向</option>
+            </select>
+          </div>
+          <div class="row">
+            <label for="money1">金運</label>
+            <select id="money1">
+              <option value="">選択してください</option>
+              <option value="堅実">堅実</option>
+              <option value="浪費">浪費</option>
+              <option value="投資志向">投資志向</option>
+              <option value="その日暮らし">その日暮らし</option>
+            </select>
+          </div>
+          <div class="row" style="margin-bottom:0;">
+            <label for="hobby1">趣味</label>
+            <select id="hobby1">
+              <option value="">選択してください</option>
+              <option value="インドア">インドア</option>
+              <option value="アウトドア">アウトドア</option>
+              <option value="グルメ">グルメ</option>
+              <option value="学習">学習</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-label="入力：2人目">
+        <h2>2人目</h2>
+        <div class="body">
+          <div class="row">
+            <label for="name2">名前</label>
+            <input id="name2" type="text" placeholder="例：たろう" maxlength="20" />
+          </div>
+          <div class="row">
+            <label for="blood2">血液型</label>
+            <select id="blood2">
+              <option value="">選択してください</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="O">O</option>
+              <option value="AB">AB</option>
+            </select>
+          </div>
+          <div class="row">
+            <label for="personality2">行動傾向</label>
+            <select id="personality2">
+              <option value="">選択してください</option>
+              <option value="のんびり">のんびり</option>
+              <option value="アクティブ">アクティブ</option>
+              <option value="好奇心旺盛">好奇心旺盛</option>
+              <option value="安定志向">安定志向</option>
+            </select>
+          </div>
+          <div class="row">
+            <label for="money2">金運</label>
+            <select id="money2">
+              <option value="">選択してください</option>
+              <option value="堅実">堅実</option>
+              <option value="浪費">浪費</option>
+              <option value="投資志向">投資志向</option>
+              <option value="その日暮らし">その日暮らし</option>
+            </select>
+          </div>
+          <div class="row" style="margin-bottom:0;">
+            <label for="hobby2">趣味</label>
+            <select id="hobby2">
+              <option value="">選択してください</option>
+              <option value="インドア">インドア</option>
+              <option value="アウトドア">アウトドア</option>
+              <option value="グルメ">グルメ</option>
+              <option value="学習">学習</option>
+            </select>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="card" aria-label="操作と結果" style="margin-top:16px;">
+      <h2>診断</h2>
+      <div class="body">
+        <div class="actions">
+          <button class="primary" id="btnJudge">診断する</button>
+          <button class="ghost" id="btnReset" type="button">リセット</button>
+        </div>
+
+        <div class="error" id="errorBox" role="alert" aria-live="polite"></div>
+
+        <div class="result" id="resultBox" style="display:none;" aria-live="polite">
+          <div class="resultTop">
+            <div class="pill" id="pairLabel">—</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <div>
+                <div style="color:var(--muted); font-size:12px;">相性スコア</div>
+                <div class="score" id="scoreText">0</div>
+              </div>
+              <div>
+                <div style="color:var(--muted); font-size:12px;">ランク</div>
+                <div class="rank" id="rankText">-</div>
+              </div>
+            </div>
+          </div>
+          <p class="comment" id="commentText"></p>
+          <div class="smallNote" id="detailText"></div>
+        </div>
+
+        <footer>※娯楽用の診断です（でも意外と当たる…かも）</footer>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // ====== ユーティリティ ======
+    const $ = (id) => document.getElementById(id);
+
+    function pickRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function clamp(n, min, max) {
+      return Math.max(min, Math.min(max, n));
+    }
+
+    function rankFromScore(score) {
+      if (score >= 85) return "A";
+      if (score >= 70) return "B";
+      if (score >= 55) return "C";
+      if (score >= 40) return "D";
+      return "E";
+    }
+
+    function setRankStyle(el, rank){
+      el.classList.remove("rankA","rankB","rankC","rankD","rankE");
+      if(rank==="A") el.classList.add("rankA");
+      if(rank==="B") el.classList.add("rankB");
+      if(rank==="C") el.classList.add("rankC");
+      if(rank==="D") el.classList.add("rankD");
+      if(rank==="E") el.classList.add("rankE");
+    }
+
+    function safeName(s) {
+      return (s || "").trim().slice(0, 20);
+    }
+
+    function showError(msg) {
+      const box = $("errorBox");
+      box.textContent = msg;
+      box.style.display = "block";
+    }
+
+    function clearError() {
+      const box = $("errorBox");
+      box.textContent = "";
+      box.style.display = "none";
+    }
+
+    function readInputs(prefix) {
+      const name = safeName($(prefix + "name").value);
+      const blood = $(prefix + "blood").value;
+      const personality = $(prefix + "personality").value;
+      const money = $(prefix + "money").value;
+      const hobby = $(prefix + "hobby").value;
+      return { name, blood, personality, money, hobby };
+    }
+
+    function validate(p1, p2) {
+      const fields = [
+        { key:"name", label:"名前" },
+        { key:"blood", label:"血液型" },
+        { key:"personality", label:"性格" },
+        { key:"money", label:"金運" },
+        { key:"hobby", label:"趣味" },
+      ];
+
+      for (const f of fields) {
+        if (!p1[f.key]) return "1人目の「" + f.label + "」が未入力です。";
+        if (!p2[f.key]) return "2人目の「" + f.label + "」が未入力です。";
+      }
+      if (p1.name.length === 0) return "1人目の「名前」が未入力です。";
+      if (p2.name.length === 0) return "2人目の「名前」が未入力です。";
+      return "";
+    }
+
+    // ====== 採点ルール（要件に沿って：一致で加点／補完で加点／衝突で減点） ======
+    // 最終的に0〜100に収まるように、ベース+加点減点→クランプ→微調整を実施
+    const complementPairs = {
+      // 性格
+      "性格": [
+        ["計画的", "自由奔放", 10],
+        ["外向的", "内向的", 8],
+      ],
+      // 金運
+      "金運": [
+        ["堅実", "投資志向", 7],
+        ["浪費", "投資志向", 4], // 刺激はあるが衝突しやすいので少しだけ
+      ],
+      // 趣味
+      "趣味": [
+        ["インドア", "学習", 6],
+        ["アウトドア", "グルメ", 5],
+      ],
+      // 血液型（お遊び要素として少し）
+      "血液型": [
+        ["A", "O", 4],
+        ["B", "AB", 4],
+      ]
+    };
+
+    const conflictPairs = {
+      "性格": [
+        ["計画的", "その日暮らし", 10], // ※性格×金運の混在は後で処理（ここは使わない）
+      ],
+      "金運": [
+        ["堅実", "浪費", 12],
+        ["投資志向", "その日暮らし", 10],
+      ],
+      "趣味": [
+        ["インドア", "アウトドア", 8],
+      ],
+      "血液型": [
+        ["A", "B", 5], // ありがちな衝突ネタ（軽め）
+      ]
+    };
+
+    function isPair(a, b, x, y) {
+      return (a === x && b === y) || (a === y && b === x);
+    }
+
+    function scoreOneCategory(label, v1, v2) {
+      let delta = 0;
+      let reasons = [];
+
+      // 同じ選択肢は加点
+      if (v1 === v2) {
+        const add = (label === "血液型") ? 8 : 14; // 血液型は影響を小さめに
+        delta += add;
+        reasons.push("「" + label + "」が同じ（+" + add + "）");
+        return { delta, reasons };
+      }
+
+      // 補完関係でも加点
+      for (const [a, b, add] of (complementPairs[label] || [])) {
+        if (isPair(v1, v2, a, b)) {
+          delta += add;
+          reasons.push("「" + label + "」が補完関係（+" + add + "）");
+          // 補完は複数当たらない想定だが、安全のため続行
+        }
+      }
+
+      // 明らかに衝突する組み合わせは減点
+      for (const [a, b, sub] of (conflictPairs[label] || [])) {
+        if (isPair(v1, v2, a, b)) {
+          delta -= sub;
+          reasons.push("「" + label + "」が衝突しやすい（-" + sub + "）");
+        }
+      }
+
+      return { delta, reasons };
+    }
+
+    // カテゴリ跨ぎの補完/衝突（例：計画的×自由奔放のような補完は同カテゴリで処理済み）
+    function scoreCross(p1, p2) {
+      let delta = 0;
+      let reasons = [];
+
+      // 性格 × 金運
+      // 計画的 × 堅実/投資志向 は安定しやすい
+      const combo = (p1.personality + "×" + p1.money) + " / " + (p2.personality + "×" + p2.money);
+
+      // 片方が計画的で、もう片方が浪費 or その日暮らし は減点
+      const hasPlanned = (p) => p.personality === "計画的";
+      const isLooseMoney = (p) => (p.money === "浪費" || p.money === "その日暮らし");
+
+      if ((hasPlanned(p1) && isLooseMoney(p2)) || (hasPlanned(p2) && isLooseMoney(p1))) {
+        delta -= 8;
+        reasons.push("「計画的 × ルーズ金運」は揉めポイント（-8）");
+      }
+
+      // 自由奔放 × 投資志向 は勢いが合えば強い
+      const isFree = (p) => p.personality === "自由奔放";
+      const isInvest = (p) => p.money === "投資志向";
+      if ((isFree(p1) && isInvest(p2)) || (isFree(p2) && isInvest(p1))) {
+        delta += 6;
+        reasons.push("「自由奔放 × 投資志向」は挑戦が噛み合う（+6）");
+      }
+
+      // 内向的 × インドア/学習 は一緒に落ち着ける
+      const isIntro = (p) => p.personality === "内向的";
+      const isCalmHobby = (p) => (p.hobby === "インドア" || p.hobby === "学習");
+      if ((isIntro(p1) && isCalmHobby(p2)) || (isIntro(p2) && isCalmHobby(p1))) {
+        delta += 4;
+        reasons.push("「内向的 × 落ち着く趣味」は相性◎（+4）");
+      }
+
+      return { delta, reasons };
+    }
+
+    // ランクごとのコメント（3〜5種類からランダム）
+    const comments = {
+      A: [
+        "かなり強い相性！価値観が噛み合いやすく、一緒にいるほど安定感が増していきそう。",
+        "相互理解が早いタイプ。短所も「味」に変えられる関係になりやすいです。",
+        "チーム感が出る相性。役割分担が自然にできて、喧嘩しても回復が早いかも。",
+        "“合う”というより“育つ”相性。未来志向で一緒にレベルアップできそう！"
+      ],
+      B: [
+        "良い相性！お互いに歩み寄りができれば、長く続きやすい組み合わせです。",
+        "テンポが近いタイプ。たまにズレても、会話で調整できる余白がある関係。",
+        "相性は上々。相手の得意分野を尊重できると、グッとA寄りに伸びそう。"
+      ],
+      C: [
+        "普通に相性は悪くないけど、相手の“こだわりポイント”を知ると安定します。",
+        "可もなく不可もなく。距離感の作り方次第で、かなり化けるタイプです。",
+        "合う部分とズレる部分が半々。ルールを少し決めると快適になりそう！",
+        "相性は平均点。『相手の地雷』だけ避けられたら、十分にうまくいきます。"
+      ],
+      D: [
+        "ちょっと注意が必要。価値観がぶつかりやすいので、最初に期待値調整が吉。",
+        "合わないというより“摩擦が出やすい”。言い方・タイミングで印象が変わります。",
+        "衝突ポイントが見えやすい相性。ルール作り（お金・時間）があると安心。"
+      ],
+      E: [
+        "なかなかハードモード。正面衝突しやすいので、無理に合わせるより工夫が必要。",
+        "相性は低め。『違うから面白い』に変換できるかがカギになりそう。",
+        "衝突の芽が多め。距離感を丁寧に扱うと、意外と長所が見えてきます。",
+        "噛み合いづらい傾向。期待より“確認”を増やすと、ダメージが減ります。"
+      ]
+    };
+
+    function buildDetail(reasons) {
+      if (!reasons.length) return "補完・衝突の強い組み合わせは少なめ。会話量で決まるタイプ。";
+      // 最大3件だけ表示（うるさくしない）
+      return "主な要因： " + reasons.slice(0, 3).join(" / ");
+    }
+
+    // ====== メイン診断 ======
+    function diagnose() {
+      clearError();
+
+      const p1 = readInputs("");
+      const p2 = readInputs("2".replace("2","")); // ダミー回避（使わない）
+      // ↑上は不要に見えるので正しく読み直し
+    }
+
+    // 正しく読み込み
+    function getPlayers() {
+      const p1 = {
+        name: safeName($("name1").value),
+        blood: $("blood1").value,
+        personality: $("personality1").value,
+        money: $("money1").value,
+        hobby: $("hobby1").value
+      };
+      const p2 = {
+        name: safeName($("name2").value),
+        blood: $("blood2").value,
+        personality: $("personality2").value,
+        money: $("money2").value,
+        hobby: $("hobby2").value
+      };
+      return { p1, p2 };
+    }
+
+    function runDiagnosis() {
+      clearError();
+      const { p1, p2 } = getPlayers();
+
+      const err = validate(p1, p2);
+      if (err) {
+        $("resultBox").style.display = "none";
+        showError(err);
+        return;
+      }
+
+      // ベース点：相性診断っぽさのため、低すぎ高すぎになりにくい中心値を置く
+      let score = 55; // 平均点スタート
+      let reasons = [];
+
+      // カテゴリ別
+      const catList = [
+        ["血液型", p1.blood, p2.blood],
+        ["性格", p1.personality, p2.personality],
+        ["金運", p1.money, p2.money],
+        ["趣味", p1.hobby, p2.hobby]
+      ];
+
+      for (const [label, v1, v2] of catList) {
+        const r = scoreOneCategory(label, v1, v2);
+        score += r.delta;
+        reasons.push(...r.reasons);
+      }
+
+      // 跨ぎルール
+      const cross = scoreCross(p1, p2);
+      score += cross.delta;
+      reasons.push(...cross.reasons);
+
+      // ちょい“名前ボーナス”（同じ名前だと運命感…ただし小さめ）
+      if (p1.name && p2.name && p1.name === p2.name) {
+        score += 3;
+        reasons.push("名前が同じ（+3）");
+      }
+
+      // 0〜100へ調整
+      score = clamp(Math.round(score), 0, 100);
+
+      // ランクとコメント
+      const rank = rankFromScore(score);
+      const comment = pickRandom(comments[rank]);
+
+      // 表示
+      $("pairLabel").textContent = p1.name + " × " + p2.name;
+      $("scoreText").textContent = String(score);
+      $("rankText").textContent = rank;
+      setRankStyle($("rankText"), rank);
+      $("commentText").textContent = comment;
+      $("detailText").textContent = buildDetail(reasons);
+
+      $("resultBox").style.display = "block";
+    }
+
+    function resetAll() {
+      const ids = [
+        "name1","blood1","personality1","money1","hobby1",
+        "name2","blood2","personality2","money2","hobby2"
+      ];
+      for (const id of ids) {
+        const el = $(id);
+        if (el.tagName === "SELECT") el.value = "";
+        else el.value = "";
+      }
+      clearError();
+      $("resultBox").style.display = "none";
+      $("pairLabel").textContent = "—";
+      $("scoreText").textContent = "0";
+      $("rankText").textContent = "-";
+      $("commentText").textContent = "";
+      $("detailText").textContent = "";
+      setRankStyle($("rankText"), ""); // 解除
+    }
+
+    // ====== イベント ======
+    $("btnJudge").addEventListener("click", runDiagnosis);
+    $("btnReset").addEventListener("click", resetAll);
+
+    // Enterキーで診断（名前欄で押したとき）
+    $("name1").addEventListener("keydown", (e)=>{ if(e.key==="Enter") runDiagnosis(); });
+    $("name2").addEventListener("keydown", (e)=>{ if(e.key==="Enter") runDiagnosis(); });
+  </script>
+</body>
+</html>
